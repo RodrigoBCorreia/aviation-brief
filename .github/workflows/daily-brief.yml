@@ -1,0 +1,39 @@
+name: Aviation Morning Brief
+
+on:
+  schedule:
+    # Runs at 11:00 UTC = 07:00 EST / 08:00 EDT
+    # Adjust this if you are in a different timezone:
+    #   UTC-5 (EST)  → "0 12 * * *"
+    #   UTC-6 (CST)  → "0 13 * * *"
+    #   UTC-3 (ART)  → "0 10 * * *"
+    #   UTC+1 (CET)  → "0 6 * * *"
+    - cron: "0 11 * * *"
+
+  # Allows you to trigger manually from the GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  send-brief:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send aviation brief
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          TWILIO_WHATSAPP_TO: ${{ secrets.TWILIO_WHATSAPP_TO }}
+        run: python main.py --now
